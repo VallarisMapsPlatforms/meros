@@ -1,0 +1,542 @@
+{
+  "info": {
+    "name": "Meros — OGC API Features (demo)",
+    "description": "Walks the same path as the live demo: capabilities, the same question asked of two different storages, a second dataset, paging, and the error cases.\n\nStart the server first:\n\n    go run ./cmd/meros -config examples/catalog.yml\n\nMongoDB must be up (docker compose up -d) — the server pings it at boot and exits if it cannot reach it.\n\nRun the folders in order — '01 · The same question, two storages' compares the second answer against the first, so the MongoDB request has to run before the file one.\n\nStorage adapters use the MongoDB Go driver v2.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "bbox",
+      "value": "132.45,34.39,132.46,34.40",
+      "type": "string"
+    },
+    {
+      "key": "mongoFeatures",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 · Capabilities",
+      "item": [
+        {
+          "name": "1 · Landing page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const rels = pm.response.json().links.map(l => l.rel);",
+                  "pm.test('links required by Requirement 2 are present', () => {",
+                  "  pm.expect(rels).to.include.members(['service-desc', 'conformance', 'data']);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 · API definition",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('is an OpenAPI 3 document', () => {",
+                  "  pm.expect(pm.response.json().openapi).to.match(/^3\\./);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3 · Conformance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conformance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conformance"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('declares only what it actually serves', () => {",
+                  "  const c = pm.response.json().conformsTo;",
+                  "  pm.expect(c).to.have.lengthOf(2);",
+                  "  pm.expect(c.join(' ')).to.include('conf/core').and.include('conf/geojson');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4 · Collections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const ids = pm.response.json().collections.map(c => c.id);",
+                  "pm.test('three collections, and nothing says where they live', () => {",
+                  "  pm.expect(ids).to.include.members(['landmarks-mongodb', 'landmarks-file', 'hiroden']);",
+                  "  pm.expect(JSON.stringify(pm.response.json())).to.not.include('mongodb://');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5 · One collection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/landmarks-mongodb",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "landmarks-mongodb"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('carries an extent and a CRS, which map clients need', () => {",
+                  "  const c = pm.response.json();",
+                  "  pm.expect(c.extent.spatial.bbox[0]).to.have.lengthOf(4);",
+                  "  pm.expect(c.crs[0]).to.include('CRS84');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 · The same question, two storages",
+      "item": [
+        {
+          "name": "1 · landmarks-mongodb — bbox",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/landmarks-mongodb/items?bbox={{bbox}}&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "landmarks-mongodb",
+                "items"
+              ],
+              "query": [
+                {
+                  "key": "bbox",
+                  "value": "{{bbox}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('answered by MongoDB', () => {",
+                  "  pm.expect(pm.response.json().numberReturned).to.be.above(0);",
+                  "});",
+                  "",
+                  "// Regression guard: driver v2 decodes sub-documents as bson.D where v1",
+                  "// gave bson.M. A type switch in toFeature that knows only bson.M leaves",
+                  "// this empty — the response still looks well-formed, just nameless.",
+                  "pm.test('properties survive the MongoDB → GeoJSON translation', () => {",
+                  "  const f = pm.response.json().features[0];",
+                  "  pm.expect(Object.keys(f.properties), 'properties came back empty').to.not.be.empty;",
+                  "  pm.expect(f.properties.name).to.be.a('string');",
+                  "});",
+                  "",
+                  "// keep the answer so the next request can be checked against it",
+                  "pm.collectionVariables.set('mongoFeatures', JSON.stringify(pm.response.json().features));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 · landmarks-file — the very same bbox",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/landmarks-file/items?bbox={{bbox}}&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "landmarks-file",
+                "items"
+              ],
+              "query": [
+                {
+                  "key": "bbox",
+                  "value": "{{bbox}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('identical features to the MongoDB answer', () => {",
+                  "  const before = pm.collectionVariables.get('mongoFeatures');",
+                  "  pm.expect(before, 'run the MongoDB request first').to.not.be.empty;",
+                  "  pm.expect(JSON.stringify(pm.response.json().features)).to.eql(before);",
+                  "});",
+                  "// the links legitimately differ — they carry the collection name"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 · A different dataset",
+      "item": [
+        {
+          "name": "1 · hiroden — tram lines in the same bbox",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/hiroden/items?bbox={{bbox}}&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "hiroden",
+                "items"
+              ],
+              "query": [
+                {
+                  "key": "bbox",
+                  "value": "{{bbox}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('same envelope, different geometry type', () => {",
+                  "  const fc = pm.response.json();",
+                  "  pm.expect(fc.type).to.eql('FeatureCollection');",
+                  "  pm.expect(fc.features[0].geometry.type).to.eql('MultiLineString');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 · Paging",
+      "item": [
+        {
+          "name": "1 · page 1 — next only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/landmarks-file/items?limit=3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "landmarks-file",
+                "items"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const rels = pm.response.json().links.map(l => l.rel);",
+                  "pm.test('has next, has no prev', () => {",
+                  "  pm.expect(rels).to.include('next');",
+                  "  pm.expect(rels).to.not.include('prev');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 · page 2 — next and prev",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/landmarks-file/items?limit=3&offset=3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "landmarks-file",
+                "items"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "3"
+                },
+                {
+                  "key": "offset",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const links = Object.fromEntries(pm.response.json().links.map(l => [l.rel, l.href]));",
+                  "pm.test('can go both ways', () => {",
+                  "  pm.expect(links).to.have.property('next');",
+                  "  pm.expect(links.prev).to.include('offset=0');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 · One feature",
+      "item": [
+        {
+          "name": "1 · Atomic Bomb Dome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/landmarks-mongodb/items/hs-001",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "landmarks-mongodb",
+                "items",
+                "hs-001"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('is 原爆ドーム', () => {",
+                  "  pm.expect(pm.response.json().properties.name_ja).to.eql('原爆ドーム');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 · Errors say what is wrong",
+      "item": [
+        {
+          "name": "1 · unknown collection → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/ghost/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "ghost",
+                "items"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));",
+                  "pm.test('says which thing was not found', () => {",
+                  "  pm.expect(pm.response.json().description).to.include('collection');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2 · malformed bbox → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/collections/landmarks-file/items?bbox=1,2,3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "collections",
+                "landmarks-file",
+                "items"
+              ],
+              "query": [
+                {
+                  "key": "bbox",
+                  "value": "1,2,3"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));",
+                  "pm.test('names the parameter and what it expected', () => {",
+                  "  pm.expect(pm.response.json().description).to.include('bbox');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

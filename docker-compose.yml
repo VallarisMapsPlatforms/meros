@@ -1,0 +1,20 @@
+# Local MongoDB for the demo — seeds itself on first start from
+# examples/mongo-init/seed.js.
+#
+# Bound to 127.0.0.1 and unauthenticated on purpose: it holds eight public
+# landmark coordinates that are already in this repository, rebuilt from the
+# seed script on every fresh volume. The binding is what matters — nothing
+# outside this machine can reach it.
+#
+# Anything real sets MEROS_MONGODB_URI with proper credentials instead.
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - ./examples/mongo-init:/docker-entrypoint-initdb.d:ro
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

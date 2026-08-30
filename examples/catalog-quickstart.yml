@@ -1,0 +1,25 @@
+# Quickstart catalog: both collections come from plain GeoJSON files.
+# Zero dependencies — no database, no docker.
+#
+# For the full demo (the same landmarks served from MongoDB alongside these),
+# use examples/catalog.yml instead.
+collections:
+  - id: landmarks
+    title: Hiroshima Landmarks
+    description: >-
+      Landmark points around Hiroshima
+      (coordinates © OpenStreetMap contributors, ODbL 1.0)
+    extent: [132.3193, 34.2965, 132.4846, 34.4015]
+    backend: file
+    source:
+      path: examples/data/hiroshima-landmarks.geojson
+
+  - id: hiroden
+    title: Hiroden Tram Lines
+    description: >-
+      Hiroshima Electric Railway passenger lines, from OpenStreetMap
+      (© OpenStreetMap contributors, ODbL 1.0)
+    extent: [132.4274, 34.3523, 132.4760, 34.4097]
+    backend: file
+    source:
+      path: examples/data/hiroden-lines.geojson

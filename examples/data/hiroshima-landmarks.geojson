@@ -1,0 +1,136 @@
+{
+  "type": "FeatureCollection",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL 1.0 — https://opendatacommons.org/licenses/odbl/1-0/",
+  "source": "Coordinates from OpenStreetMap; names and categories written for this demo",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "hs-001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.45358,
+          34.39547
+        ]
+      },
+      "properties": {
+        "name": "Atomic Bomb Dome",
+        "name_ja": "原爆ドーム",
+        "category": "heritage"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hs-002",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.45283,
+          34.3919
+        ]
+      },
+      "properties": {
+        "name": "Peace Memorial Park",
+        "name_ja": "平和記念公園",
+        "category": "park"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hs-003",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.45951,
+          34.40153
+        ]
+      },
+      "properties": {
+        "name": "Hiroshima Castle",
+        "name_ja": "広島城",
+        "category": "castle"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hs-004",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.46769,
+          34.40041
+        ]
+      },
+      "properties": {
+        "name": "Shukkei-en Garden",
+        "name_ja": "縮景園",
+        "category": "garden"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hs-005",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.47552,
+          34.39783
+        ]
+      },
+      "properties": {
+        "name": "Hiroshima Station",
+        "name_ja": "広島駅",
+        "category": "transport"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hs-006",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.45469,
+          34.39566
+        ]
+      },
+      "properties": {
+        "name": "Orizuru Tower",
+        "name_ja": "おりづるタワー",
+        "category": "viewpoint"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hs-007",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.48462,
+          34.3919
+        ]
+      },
+      "properties": {
+        "name": "Mazda Zoom-Zoom Stadium",
+        "name_ja": "マツダスタジアム",
+        "category": "stadium"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hs-008",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.3193,
+          34.29654
+        ]
+      },
+      "properties": {
+        "name": "Itsukushima Shrine",
+        "name_ja": "厳島神社",
+        "category": "heritage"
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+# The demo catalog: three collections, two different storages, one API.
+#
+# The `backend:` line is the swap point of the whole architecture. Nothing
+# above it — not the URL, not the response shape — knows which storage a
+# collection uses.
+#
+# landmarks-mongodb and landmarks-file hold the same features on purpose.
+# Asking both the same question is how you check the contract is faithful.
+#
+# Credentials never live here; the MongoDB URI comes from
+# MEROS_MONGODB_URI, defaulting to the local docker-compose instance.
+collections:
+  - id: landmarks-mongodb
+    title: Hiroshima Landmarks (MongoDB)
+    description: >-
+      Landmark points served from MongoDB
+      (coordinates © OpenStreetMap contributors, ODbL 1.0)
+    extent: [132.3193, 34.2965, 132.4846, 34.4015]
+    backend: mongodb
+    source:
+      database: meros
+      collection: landmarks
+
+  - id: landmarks-file
+    title: Hiroshima Landmarks (GeoJSON file)
+    description: >-
+      The same landmark points, served from a plain GeoJSON file
+      (coordinates © OpenStreetMap contributors, ODbL 1.0)
+    extent: [132.3193, 34.2965, 132.4846, 34.4015]
+    backend: file
+    source:
+      path: examples/data/hiroshima-landmarks.geojson
+
+  - id: hiroden
+    title: Hiroden Tram Lines
+    description: >-
+      Hiroshima Electric Railway passenger lines, from OpenStreetMap
+      (© OpenStreetMap contributors, ODbL 1.0)
+    extent: [132.4274, 34.3523, 132.4760, 34.4097]
+    backend: file
+    source:
+      path: examples/data/hiroden-lines.geojson
